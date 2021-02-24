@@ -157,8 +157,8 @@ class PttImageScraper(BasicScraper):
             articles = self.get_ppt_article_list(soup)
             for article in articles:
                 # get image path
-                if 'href' in
-                self._scrape_imageurl_from_article(article)
+                if 'href' in article:
+                    self._scrape_imageurl_from_article(article)
                 # save path
                 if 'image' in article:
                     for image in article['image']:

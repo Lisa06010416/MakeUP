@@ -46,31 +46,3 @@ def is_image(imagepath):
             return True
         else:
             return False
-
-
-# 第一頁
-soup = BeautifulSoup(chrome.page_source, 'html.parser')
-article_anchors = get_ppt_article_list(soup)
-print(article_anchors)
-
-
-# 每篇文章連結 拿到圖的連結 並存起來
-for anchor in article_anchors[0:1]:
-    # article_url and get soup
-    article_url = domain_name + anchor['href']
-    chrome.get(article_url)
-    soup = BeautifulSoup(chrome.page_source, 'html.parser')
-
-    # parser
-    article_and_command = soup.find("div", id="main-container")
-    content = article_and_command.find_all("a")
-    content_info = get_attrs_and_text(content)
-
-    # get image path
-    anchor['image'] = []
-    for index,info in enumerate(content_info):
-        href = info['href']
-        if is_image(href):
-            anchor['image'].append(href)
-
-print(article_anchors[0])

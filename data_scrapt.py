@@ -1,12 +1,13 @@
 from selenium import webdriver
 from collections.abc import Sequence
 from bs4 import BeautifulSoup
-import time
-import bs4
+
+# class BasicScrapt:
+#     def __init__(self, chrome):
+#     def
 
 domain_name = "https://www.ptt.cc/"
 options = webdriver.ChromeOptions()
-options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 options.add_argument("--disable-notifications")
 options.add_argument("headless")
 chrome = webdriver.Chrome('./chromedriver', chrome_options=options)
@@ -28,6 +29,7 @@ def get_attrs_and_text(resultset):
         all_info.append(attrs)
     return all_info
 
+
 def get_ppt_article_list(soup):
     article_anchor_info = []
     resultset = soup.find_all("div", class_='title')
@@ -36,9 +38,6 @@ def get_ppt_article_list(soup):
         info = get_attrs_and_text(article_anchor)
         article_anchor_info.append(info[0])
     return article_anchor_info
-
-
-
 
 
 def is_image(imagepath):

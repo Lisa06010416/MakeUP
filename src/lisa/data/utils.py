@@ -20,12 +20,7 @@ def create_dir(path):
         print("Successfully created the directory %s " % path)
 
 
-def download(url, savepath=None):
-    file = wget.download(url, out=savepath)
-    print(file)
-
-
-def is_image(imagepath):
+def is_image_path(imagepath):
     if isinstance(imagepath, str):
         if imagepath.lower().endswith(('bmp', 'dib', 'png', 'jpg', 'jpeg', 'pbm', 'pgm', 'ppm', 'tif', 'tiff')):
             return True

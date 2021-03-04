@@ -22,7 +22,7 @@ class Scraper(ABC):
     def download_from_url(self, url, savepath=None):
         create_dir(savepath)
         filename = wget.detect_filename(url)
-        if os.path.isfile(os.path.join(savepath,filename)):
+        if not os.path.isfile(os.path.join(savepath,filename)):
             wget.download(url, out=savepath)
 
     def download_images_from_listofdicts(self, articles, savepath):
@@ -165,7 +165,7 @@ class PttScraper(SeleniumScraper):
                 next_page = button['href']
         return oldest_page, last_page, newest_page, next_page
 
-    def scraper(self):
+    def scraper(self,savepath):
         contents_url = self.board_url
         articles = None
         for _ in range(self.scrapt_page_num):
@@ -175,13 +175,12 @@ class PttScraper(SeleniumScraper):
                 # get image path
                 if 'href' in article:
                     self._get_imageurl_from_article(article)
+                    if 'image' in article:
+                        self.download_images_from_List(article['images'],savepath)
                 time.sleep(1)
             _, last_page, _, _ = self._get_change_contens_button(soup)
             contents_url = urljoin(self.domain_name, last_page)
         return articles
-
-    def download_images(self, articles, savepath):
-        self.download_images_from_listofdicts(articles, savepath)
 
 
 class XiaohongshuScraper(SeleniumScraper):
@@ -230,10 +229,10 @@ class DcardScraper(SeleniumScraper):
                 urls.append(i)
         return urls
 
-    def scraper(self, keyword, search_by="keyword"):
+    def scraper(self, savepath, keyword, limit=30, search_by="keyword"):
         search_path = ""
         if search_by == "keyword":
-            search_path = "https://www.dcard.tw/service/api/v2/search/posts?limit=3&query={}".format(keyword)
+            search_path = "https://www.dcard.tw/service/api/v2/search/posts?limit={}&query={}".format(limit,keyword)
         elif search_by == "keyword":
             search_path = "{}".format(keyword)
         soup = self.get_webdata(search_path)
@@ -245,7 +244,5 @@ class DcardScraper(SeleniumScraper):
             soup = self.get_webdata(article_url)
             url = self.get_urlpath(soup)
             article['images'] = url
-        return articles
-
-    def download_images(self, articles, savepath):
         self.download_images_from_listofdicts(articles, savepath)
+        return articles

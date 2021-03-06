@@ -15,8 +15,8 @@ def _set_log_save_path(filename, savepath="."):
     filename = datetime.datetime.now().strftime(filename)
     global _default_logger_save_path
     _default_logger_save_path = os.path.join(savepath,filename)
-    
-    
+
+
 _set_log_save_path("%Y-%m-%d.log")
 
 
@@ -32,9 +32,9 @@ def _add_handler(logger):
         handler.setLevel(_default_level)
         handler.setFormatter(_default_formatter)
         logger.addHandler(handler)
+    return logger
 
 
 def get_logger(name):
     logger = logging.getLogger(name)
-    _add_handler(logger)
-    return logger
+    return _add_handler(logger)

@@ -1,7 +1,5 @@
 import os
 
-import wget
-
 
 def check_os():
     import platform
@@ -14,7 +12,8 @@ def check_os():
 def create_dir(path):
     try:
         os.makedirs(path)
-    except OSError:
+        print("creat dir {}".format(path))
+    except:
         pass
 
 

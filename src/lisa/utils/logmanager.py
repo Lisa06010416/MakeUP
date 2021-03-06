@@ -32,9 +32,13 @@ def _add_handler(logger):
         handler.setLevel(_default_level)
         handler.setFormatter(_default_formatter)
         logger.addHandler(handler)
-    return logger
 
+
+def set_logger_level(logger, level):
+    logger.setLevel(level)
 
 def get_logger(name):
     logger = logging.getLogger(name)
-    return _add_handler(logger)
+    _add_handler(logger)
+    set_logger_level(logger, _default_level)
+    return logger

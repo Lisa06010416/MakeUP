@@ -11,8 +11,11 @@ from collections.abc import Sequence
 from bs4 import BeautifulSoup
 
 from src.lisa.data.utils import is_image_path, check_os, create_dir
-
+from src.lisa.utils.logmanager import get_logger
 from abc import ABC, abstractmethod
+
+
+logger = get_logger(__name__)
 
 
 class Scraper(ABC):
@@ -24,7 +27,11 @@ class Scraper(ABC):
         create_dir(savepath)
         filename = wget.detect_filename(url)
         if not os.path.isfile(os.path.join(savepath,filename)):
-            wget.download(url, out=savepath)
+            try:
+                wget.download(url, out=savepath)
+                logger.info("Download file {} success".format(url))
+            except:
+                logger.info("Download file {} fail".format(url))
 
     def download_images_from_listofdicts(self, articles, savepath):
         for article in articles:
@@ -153,8 +160,11 @@ class PttScraper(RequestScraper):
                 next_page = button['href']
         return oldest_page, last_page, newest_page, next_page
 
-    def scraper(self, keyword=None ,search_by="keyword"):
-        if search_by=="keyword":
+    def scraper(self, savepath, keyword=None, search_by_keyword=False):
+        """
+        還未加入keyword search
+        """
+        if search_by_keyword:
             contents_url = 'https://www.ptt.cc/bbs/movie/search?'
         else:
             contents_url = self.board_url
@@ -166,13 +176,13 @@ class PttScraper(RequestScraper):
                 # get image path
                 if 'href' in article:
                     self._get_imageurl_from_article(article)
+                    if 'images' in article:
+                        self.download_images_from_List(article['images'], savepath)
                 time.sleep(1)
             _, last_page, _, _ = self._get_change_contens_button(soup)
             contents_url = urljoin(self.domain_name, last_page)
         return articles
 
-    def download_images(self, articles, savepath):
-        self.download_images_from_listofdicts(articles, savepath)
 
     @staticmethod
     def get_attrs_and_text(resultset):
@@ -237,7 +247,7 @@ class DcardScraper(SeleniumScraper):
                 urls.append(i)
         return urls
 
-    def scraper(self, keyword, limit=3, search_by="keyword"):
+    def scraper(self, keyword, savepath, limit=3, search_by="keyword"):
         search_path = ""
         if search_by == "keyword":
             search_path = "https://www.dcard.tw/service/api/v2/search/posts?limit={}&query={}".format(limit,keyword)
@@ -252,7 +262,5 @@ class DcardScraper(SeleniumScraper):
             soup = self.get_webdata(article_url)
             url = self.get_urlpath(soup)
             article['images'] = url
+            self.download_images_from_List(article['images'], savepath)
         return articles
-
-    def download_images(self, articles, savepath):
-        self.download_images_from_listofdicts(articles, savepath)

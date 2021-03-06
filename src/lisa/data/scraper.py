@@ -10,7 +10,7 @@ from selenium import webdriver
 from collections.abc import Sequence
 from bs4 import BeautifulSoup
 
-from src.lisa.utils import is_image_path, check_os, create_dir
+from src.lisa.data.utils import is_image_path, check_os, create_dir
 
 from abc import ABC, abstractmethod
 

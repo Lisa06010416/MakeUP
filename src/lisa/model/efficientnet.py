@@ -31,7 +31,7 @@ class EfficientNetModify(EfficientNet):
         loss = None
         if len(labels) > 0:
             loss_fun = CrossEntropyLoss()
-            loss = loss_fun(logits, labels - 1)
+            loss = loss_fun(logits, labels)
 
         return EfficientNetOutput(
             loss=loss,

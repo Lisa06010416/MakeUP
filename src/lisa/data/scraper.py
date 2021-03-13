@@ -52,11 +52,10 @@ class GoogleSearchScraper(Scraper):
 
 class RequestScraper(Scraper):
     def __init__(self, **kwargs):
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_webdata(self, web_url, **kwargs):
         resp = requests.get(web_url)
-        print(resp.content)
         return BeautifulSoup(resp.content, 'html.parser')
 
 
@@ -81,7 +80,8 @@ class SeleniumScraper(Scraper):
     def _get_chromedriver(options=None, executable_path=None):
         if not options:
             options = webdriver.ChromeOptions()
-            options.add_argument('--headless')
+            options.add_argument("--disable-notifications")
+            options.add_argument("headless")
 
         os = check_os()
         if os == "win":
@@ -95,15 +95,6 @@ class SeleniumScraper(Scraper):
 
         return chromedriver
 
-    @staticmethod
-    def _set_chromedriver_options(options=None):
-        if not options:
-            options = webdriver.ChromeOptions()
-            options.add_argument("--disable-notifications")
-            options.add_argument("headless")
-        return options
-
-    
 
 class PttScraper(RequestScraper):
     def __init__(self,
@@ -176,7 +167,7 @@ class PttScraper(RequestScraper):
                 # get image path
                 if 'href' in article:
                     self._get_imageurl_from_article(article)
-                    if 'images' in article:
+                    if 'images' in article:  ## 傳一個function?
                         self.download_images_from_List(article['images'], savepath)
                 time.sleep(1)
             _, last_page, _, _ = self._get_change_contens_button(soup)
@@ -228,9 +219,6 @@ class XiaohongshuScraper(SeleniumScraper):
             url = url if 'https' in url else "https:" + url
             urls.append(url)
         return urls
-
-    def download_images(self, urls, savepath):
-        self.download_images_from_List(urls, savepath)
 
 
 class DcardScraper(SeleniumScraper):

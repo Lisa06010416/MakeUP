@@ -1,10 +1,24 @@
 import os
+import sys
 import importlib
 from src.lisa.utils import logmanager
 
 
 logger = logmanager.get_logger(__name__)
 install_when_check =False
+
+
+def is_in_notebook():
+    try:
+        get_ipython = sys.modules["IPython"].get_ipython
+        if "IPKernelApp" not in get_ipython().config:
+            raise ImportError("console")
+        if "VSCODE_PID" in os.environ:
+            raise ImportError("vscode")
+        return importlib.util.find_spec("IPython") is not None
+    except (AttributeError, ImportError, KeyError):
+        return False
+
 
 def is_in_colab():
     """
@@ -33,6 +47,7 @@ def install_decorator(package):
             else:
                 if install_when_check:
                     os.system("pip install {}".format(package))
+                    logger.info("Success install {}".format(package))
                     return True
             return has_package
         return wrap
@@ -44,7 +59,7 @@ def has_mlflow():
     return importlib.util.find_spec('mlflow') is not None
 
 
-@install_decorator("transformers==3.5.0")
+@install_decorator("transformers==4.1.0")
 def has_transformers():
     return importlib.util.find_spec('transformers') is not None
 

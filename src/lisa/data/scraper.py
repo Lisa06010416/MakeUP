@@ -47,7 +47,7 @@ class GoogleSearchScraper(Scraper):
 
 class RequestScraper(Scraper):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        pass
 
     def get_webdata(self, web_url, **kwargs):
         resp = requests.get(web_url)
@@ -70,6 +70,7 @@ class SeleniumScraper(Scraper):
             options.add_argument("--disable-notifications")
             options.add_argument("headless")
 
+        #??
         os = check_os()
         if os == "win":
             chromedriver = webdriver.Chrome(executable_path=executable_path,
@@ -87,12 +88,10 @@ class PttScraper(RequestScraper):
     def __init__(self,
                  domain_name="https://",
                  board_url="https://",
-                 search_page_num=1,
                  **kwargs):
         super().__init__(**kwargs)
         self.domain_name = domain_name
         self.board_url = board_url
-        self.search_page_num = search_page_num
 
     @classmethod
     def get_scraper(cls, **kwargs):
@@ -146,7 +145,7 @@ class PttScraper(RequestScraper):
                 next_page = button['href']
         return oldest_page, last_page, newest_page, next_page
 
-    def scraper_image(self, savepath, keyword=None, search_by_keyword=False):
+    def scraper_image(self, savepath, search_page_num=1, keyword=None, search_by_keyword=False):
         """
         還未加入keyword search
         """
@@ -155,7 +154,7 @@ class PttScraper(RequestScraper):
         else:
             contents_url = self.board_url
         articles = None
-        for _ in range(self.search_page_num):
+        for _ in range(search_page_num):
             soup = self.get_webdata(contents_url)
             articles = self.get_ppt_article_list(soup)
             for article in articles:
@@ -187,7 +186,7 @@ class PttScraper(RequestScraper):
         return all_info
 
 
-class XiaohongshuScraper(SeleniumScraper):
+class XiaohongshuScraper(RequestScraper):
     """
     小紅書目前是給一個小紅書貼文的網址，爬該網址裡面的圖
     小紅書的web沒有search的功能

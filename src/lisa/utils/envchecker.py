@@ -83,3 +83,4 @@ def set_mlflow_ui():
         ngrok.set_auth_token(NGROK_AUTH_TOKEN)
         ngrok_tunnel = ngrok.connect(addr="5000", proto="http", bind_tls=True)
         logger.info("MLflow Tracking UI: {}".format(ngrok_tunnel.public_url))
+

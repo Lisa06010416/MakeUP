@@ -49,6 +49,7 @@ def install_decorator(package):
                     os.system("pip install {}".format(package))
                     logger.info("Success install {}".format(package))
                     return True
+            logger.info("Don't have {}".format(package))
             return has_package
         return wrap
     return decorator

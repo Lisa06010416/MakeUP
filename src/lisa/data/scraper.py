@@ -23,7 +23,8 @@ class Scraper(ABC):
     def get_webdata(self, web_url, **kwargs):
         pass
 
-    def download_from_url(self, url, savepath=None):
+    @staticmethod
+    def download_from_url(url, savepath=None):
         create_dir(savepath)
         filename = wget.detect_filename(url)
         if not os.path.isfile(os.path.join(savepath,filename)):
@@ -33,13 +34,7 @@ class Scraper(ABC):
             except:
                 logger.info("Download file {} fail".format(url))
 
-    def download_images_from_listofdicts(self, articles, savepath):
-        for article in articles:
-            if 'images' in article:
-                self.download_images_from_List(article['images'], savepath)
-                time.sleep(1)
-
-    def download_images_from_List(self, url_list, savepath):
+    def download_images_from_list(self, url_list, savepath):
         for image_url in url_list:
             self.download_from_url(image_url, savepath)
 
@@ -52,7 +47,7 @@ class GoogleSearchScraper(Scraper):
 
 class RequestScraper(Scraper):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        pass
 
     def get_webdata(self, web_url, **kwargs):
         resp = requests.get(web_url)
@@ -68,14 +63,6 @@ class SeleniumScraper(Scraper):
         self.chrome.get(web_url)
         return BeautifulSoup(self.chrome.page_source, 'html.parser')
 
-    @classmethod
-    def get_scraper(cls, **kwargs):
-        # 指定新的父類別
-        base = kwargs.pop("base", None)
-        if base:
-            cls.__bases__ = (base,)
-        return cls(**kwargs)
-
     @staticmethod
     def _get_chromedriver(options=None, executable_path=None):
         if not options:
@@ -83,6 +70,7 @@ class SeleniumScraper(Scraper):
             options.add_argument("--disable-notifications")
             options.add_argument("headless")
 
+        #??
         os = check_os()
         if os == "win":
             chromedriver = webdriver.Chrome(executable_path=executable_path,
@@ -100,12 +88,18 @@ class PttScraper(RequestScraper):
     def __init__(self,
                  domain_name="https://",
                  board_url="https://",
-                 scrapt_page_num=1,
                  **kwargs):
         super().__init__(**kwargs)
         self.domain_name = domain_name
         self.board_url = board_url
-        self.scrapt_page_num = scrapt_page_num
+
+    @classmethod
+    def get_scraper(cls, **kwargs):
+        # 指定新的父類別 => 給子類別用的
+        base = kwargs.pop("base", None)
+        if base:
+            cls.__bases__ = (base,)
+        return cls(**kwargs)
 
     def get_ppt_article_list(self, soup):
         article_anchor_info = []
@@ -151,7 +145,7 @@ class PttScraper(RequestScraper):
                 next_page = button['href']
         return oldest_page, last_page, newest_page, next_page
 
-    def scraper(self, savepath, keyword=None, search_by_keyword=False):
+    def scraper_image(self, savepath, search_page_num=1, keyword=None, search_by_keyword=False):
         """
         還未加入keyword search
         """
@@ -160,15 +154,15 @@ class PttScraper(RequestScraper):
         else:
             contents_url = self.board_url
         articles = None
-        for _ in range(self.scrapt_page_num):
+        for _ in range(search_page_num):
             soup = self.get_webdata(contents_url)
             articles = self.get_ppt_article_list(soup)
             for article in articles:
                 # get image path
                 if 'href' in article:
                     self._get_imageurl_from_article(article)
-                    if 'images' in article:  ## 傳一個function?
-                        self.download_images_from_List(article['images'], savepath)
+                    if 'images' in article:
+                        self.download_images_from_list(article['images'], savepath)
                 time.sleep(1)
             _, last_page, _, _ = self._get_change_contens_button(soup)
             contents_url = urljoin(self.domain_name, last_page)
@@ -192,7 +186,7 @@ class PttScraper(RequestScraper):
         return all_info
 
 
-class XiaohongshuScraper(SeleniumScraper):
+class XiaohongshuScraper(RequestScraper):
     """
     小紅書目前是給一個小紅書貼文的網址，爬該網址裡面的圖
     小紅書的web沒有search的功能
@@ -235,6 +229,14 @@ class DcardScraper(SeleniumScraper):
                 urls.append(i)
         return urls
 
+    @classmethod
+    def get_scraper(cls, **kwargs):
+        # 指定新的父類別 => 給子類別用的
+        base = kwargs.pop("base", None)
+        if base:
+            cls.__bases__ = (base,)
+        return cls(**kwargs)
+
     def scraper(self, keyword, savepath, limit=3, search_by="keyword"):
         search_path = ""
         if search_by == "keyword":
@@ -250,5 +252,5 @@ class DcardScraper(SeleniumScraper):
             soup = self.get_webdata(article_url)
             url = self.get_urlpath(soup)
             article['images'] = url
-            self.download_images_from_List(article['images'], savepath)
+            self.download_images_from_list(article['images'], savepath)
         return articles

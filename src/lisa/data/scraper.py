@@ -61,13 +61,41 @@ class SeleniumScraper(Scraper):
 
     def get_webdata(self, web_url, **kwargs):
         self.chrome.get(web_url)
+        self.chrome.implicitly_wait(5)
+        try:  # 您的連線不是私人連線
+            go_button = self.chrome.find_element_by_id("details-button")
+            go_button.click()
+            go_button = self.chrome.find_element_by_id("proceed-link")
+            go_button.click()
+        except:
+            pass
+        time.sleep(5)  # !!
         return BeautifulSoup(self.chrome.page_source, 'html.parser')
 
     @staticmethod
     def _get_chromedriver(options=None, executable_path=None):
+        from fake_useragent import UserAgent
         if not options:
+            # https://intoli.com/blog/making-chrome-headless-undetectable/
             options = webdriver.ChromeOptions()
+            options.add_experimental_option('useAutomationExtension', False)
+            options.add_experimental_option('excludeSwitches', ['enable-automation'])
+
+            #!! 沒開時自動開（？ 如何部署（？
+            options.add_argument('--proxy-server=http://' + "localhost:8080")
             options.add_argument("--disable-notifications")
+
+            # 更換user agent
+            user_agent1 = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+            ua = UserAgent()
+            userAgent = ua.random
+            print(userAgent)
+            options.add_argument(f'user-agent={user_agent1}')
+
+            options.add_experimental_option('excludeSwitches', ['enable-automation'])
+            options.add_experimental_option('useAutomationExtension', False)
+            options.add_argument('--no-sandbox')
+
             options.add_argument("headless")
 
         #??
@@ -80,6 +108,14 @@ class SeleniumScraper(Scraper):
         else:
             assert False, "The OS must be windows or mac"
         assert chromedriver, "Cannot get chromedriver"
+
+        chromedriver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+              get: () => undefined
+            })
+          """
+        })
 
         return chromedriver
 
@@ -186,8 +222,9 @@ class PttScraper(RequestScraper):
         return all_info
 
 
-class XiaohongshuScraper(RequestScraper):
+class XiaohongshuScraper(SeleniumScraper):
     """
+    一定要用SeleniumScraper
     小紅書目前是給一個小紅書貼文的網址，爬該網址裡面的圖
     小紅書的web沒有search的功能
     """
@@ -201,17 +238,16 @@ class XiaohongshuScraper(RequestScraper):
     def scraper(self, web_url):
         soup = self.get_webdata(web_url)
         # get image
-        imgefield = soup.find("script", text=lambda text: text and 'imagelist' in text.lower())
-        imgefield = str(imgefield).split('"imageList":')[1]
-        imgefield = imgefield.split("]")[0]
-        imgefield = json.loads(imgefield + "]")
+        result = soup.find_all("i", style=lambda style: style and "background-image" in style)
         # resize image
         urls = []
-        for image in imgefield:
-            url = re.sub("/w/*/", "/w/{}}/".format(self.image_w), image['url'])
-            url = re.sub("/h/*/", "/h/{}}/".format(self.image_h), url)
+        for image in result:
+            url = image.get("style")
+            url = url.split('background-image:url(')[1]
+            url = url.split(');')[0]
             url = url if 'https' in url else "https:" + url
             urls.append(url)
+        print(urls)
         return urls
 
 

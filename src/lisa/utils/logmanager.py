@@ -37,6 +37,7 @@ def _add_handler(logger):
 def set_logger_level(logger, level):
     logger.setLevel(level)
 
+
 def get_logger(name):
     logger = logging.getLogger(name)
     _add_handler(logger)

@@ -52,6 +52,7 @@ class TestEfficientNetModify:
         train_data_path = "testdata/img/train"
         valid_data_path = "testdata/img/valid"
         model_name = 'efficientnet-b0'
+        output_dir = "./results"
         train_dataset = datasets.ImageFolder(train_data_path,
                                              transforms.Compose([
                                                  transforms.Resize(image_size),
@@ -75,16 +76,17 @@ class TestEfficientNetModify:
         model = EfficientNetModify.from_pretrained(model_name, num_classes=2, include_top=False)
 
         training_args = TrainingArguments(
-            output_dir="./results",  # 輸出模型的資料夾
-            num_train_epochs=2,  # 訓練代數
-            per_device_train_batch_size=32,  # train時的batch size
-            per_device_eval_batch_size=32,  # eval時的batch size
+            output_dir=output_dir,  # 輸出模型的資料夾
+            # num_train_epochs=2,  # 訓練代數
+            max_steps=3,
+            per_device_train_batch_size=2,  # train時的batch size
+            per_device_eval_batch_size=2,  # eval時的batch size
             gradient_accumulation_steps=1,  # 每幾個batch update一次參數
-            load_best_model_at_end=True,  # 訓練完後自動讀取最佳的model, trainer 會忽略 save_strategy,save_steps 在每次eval後存模型
+            # load_best_model_at_end=True,  # 訓練完後自動讀取最佳的model, trainer 會忽略 save_strategy,save_steps 在每次eval後存模型
             warmup_steps=500,  # 前幾個batch要做warm up
             weight_decay=0.00001,  # learning rate decay
             eval_steps=50,  # 每幾個step要eval 預設500
-            # save_steps=50,            # 每幾個step要save 預設500
+            save_steps=1,            # 每幾個step要save 預設500
             logging_steps=1,
             evaluation_strategy="steps",  # 用STEPS來判斷是否要eval
             dataloader_num_workers=2,  # 開幾個CPU做dataloader
@@ -99,7 +101,12 @@ class TestEfficientNetModify:
             compute_metrics=acc_metrics
         )
 
+        # save config
+        model.config.update_key_value("classes", train_dataset.classes)
+        model.config.save_pretrained(output_dir)
+
         trainer.train()
+
 
         predict = trainer.predict(valid_dataset)
         print(predict.predictions[1].shape)

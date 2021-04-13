@@ -1,0 +1,17 @@
+name: makeup_ci
+on:
+  push
+defaults:
+  run:
+    shell: bash
+jobs:
+  test_echo_job:
+    name: test_echo1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hi~~~
+        env:
+          NAME: Lisa
+        run: |
+          echo Hi~~ $Lisa
+

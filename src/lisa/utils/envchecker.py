@@ -1,11 +1,16 @@
-import os
-import sys
 import importlib
+import os
+import re
+import sys
+import zipfile
+
+import requests
+import wget
+
 from src.lisa.utils import logmanager
 
-
 logger = logmanager.get_logger(__name__)
-install_when_check =False
+install_when_check = False
 
 
 def is_in_notebook():
@@ -51,7 +56,9 @@ def install_decorator(package):
                     return True
             logger.info("Don't have {}".format(package))
             return has_package
+
         return wrap
+
     return decorator
 
 
@@ -85,3 +92,40 @@ def set_mlflow_ui():
         ngrok_tunnel = ngrok.connect(addr="5000", proto="http", bind_tls=True)
         logger.info("MLflow Tracking UI: {}".format(ngrok_tunnel.public_url))
 
+
+def getChromeVersion():
+    import winreg
+    version_re = re.compile(r'\d+')
+    try:
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Google\Chrome\BLBeacon')
+        _v, type = winreg.QueryValueEx(key, 'version')
+        logger.info('Current Chrome Version: {}'.format(_v))
+        return version_re.findall(_v)[0]
+    except WindowsError as e:
+        logger.warning('check Chrome failed:{}'.format(e))
+
+
+def get_chrom_driver(os_type):
+    chromdriver_download_list_url = "https://sites.google.com/a/chromium.org/chromedriver/downloads"
+    chromdriver_download_template = "https://chromedriver.storage.googleapis.com/{version}/chromedriver_{os}.zip"
+    webpage = requests.get(chromdriver_download_list_url)
+    chrom_version = getChromeVersion()
+    drive_version = ""
+    chromdriver_download_url = ""
+    if os_type == "win":
+        for line in str(webpage.content).split('"'):
+            if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
+                drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
+                if chrom_version == drive_version.split(".")[0]:
+                    break
+        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="win32")
+
+    if chromdriver_download_url:
+        logger.info("Download chromdriver from {}".format(chromdriver_download_url))
+        wget.download(chromdriver_download_url, out="chromdriver.zip")
+        zip = zipfile.ZipFile('chromdriver.zip')
+        zip.extractall()
+        zip.close()
+        os.remove('chromdriver.zip')
+    else:
+        logger.warning("Can't download chromdriver, didn't detect chromdriver download url !")

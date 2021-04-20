@@ -1,12 +1,7 @@
 import os
 
 
-def check_os():
-    import platform
-    if platform.system().lower() == "windows":
-        return "win"
-    elif platform.system().lower() == "darwin":
-        return "mac"
+
 
 
 def create_dir(path):

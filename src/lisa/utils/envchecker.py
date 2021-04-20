@@ -93,32 +93,60 @@ def set_mlflow_ui():
         logger.info("MLflow Tracking UI: {}".format(ngrok_tunnel.public_url))
 
 
-def getChromeVersion():
-    import winreg
+def getChromeVersion(os_type):
     version_re = re.compile(r'\d+')
-    try:
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Google\Chrome\BLBeacon')
-        _v, type = winreg.QueryValueEx(key, 'version')
-        logger.info('Current Chrome Version: {}'.format(_v))
-        return version_re.findall(_v)[0]
-    except WindowsError as e:
-        logger.warning('check Chrome failed:{}'.format(e))
+    version = ""
+    if os_type=="win":
+        import winreg
+        try:
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Google\Chrome\BLBeacon')
+            version, type = winreg.QueryValueEx(key, 'version')
+            logger.info('Current Chrome Version: {}'.format(version))
+        except WindowsError as e:
+            logger.warning('check Chrome failed:{}'.format(e))
+    elif os_type=="mac":
+        version = os.popen(r"/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version")
+        version = version.read()
+    else:
+        version = os.popen("google-chrome --product-version")
+        version = version.read()
+    return version_re.findall(version)[0]
 
 
-def get_chrom_driver(os_type):
+def check_os():
+    import platform
+    if platform.system().lower() == "windows":
+        os = "win"
+    elif platform.system().lower() == "darwin":
+        os = "mac"
+    elif "linux" in platform.system().lower():
+        os = "linux"
+    else:
+        assert False, "Didn't detect os"
+    logger.info("Detect os is {}".format(os))
+    return os
+
+
+def get_chrom_driver():
+    os_type = check_os()
     chromdriver_download_list_url = "https://sites.google.com/a/chromium.org/chromedriver/downloads"
     chromdriver_download_template = "https://chromedriver.storage.googleapis.com/{version}/chromedriver_{os}.zip"
     webpage = requests.get(chromdriver_download_list_url)
-    chrom_version = getChromeVersion()
+    chrom_version = getChromeVersion(os_type)
     drive_version = ""
-    chromdriver_download_url = ""
+
+    for line in str(webpage.content).split('"'):
+        if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
+            drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
+            if chrom_version == drive_version.split(".")[0]:
+                break
+
     if os_type == "win":
-        for line in str(webpage.content).split('"'):
-            if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
-                drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
-                if chrom_version == drive_version.split(".")[0]:
-                    break
         chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="win32")
+    elif os_type == "mac":
+        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="mac64")
+    else:
+        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="linux64")
 
     if chromdriver_download_url:
         logger.info("Download chromdriver from {}".format(chromdriver_download_url))
@@ -129,3 +157,5 @@ def get_chrom_driver(os_type):
         os.remove('chromdriver.zip')
     else:
         logger.warning("Can't download chromdriver, didn't detect chromdriver download url !")
+
+get_chrom_driver()

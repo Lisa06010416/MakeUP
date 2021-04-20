@@ -10,7 +10,7 @@ from selenium import webdriver
 from collections.abc import Sequence
 from bs4 import BeautifulSoup
 
-from src.lisa.data.utils import is_image_path, check_os, create_dir
+from src.lisa.data.utils import is_image_path, create_dir
 from src.lisa.utils.logmanager import get_logger
 from abc import ABC, abstractmethod
 
@@ -55,8 +55,8 @@ class RequestScraper(Scraper):
 
 
 class SeleniumScraper(Scraper):
-    def __init__(self, options=None, executable_path=None):
-        chromedriver = self._get_chromedriver(options, executable_path)
+    def __init__(self, options=None, executable_path=None, **kwargs):
+        chromedriver = self._get_chromedriver(options, executable_path, **kwargs)
         self.chrome = chromedriver
 
     def get_webdata(self, web_url, **kwargs):
@@ -73,7 +73,7 @@ class SeleniumScraper(Scraper):
         return BeautifulSoup(self.chrome.page_source, 'html.parser')
 
     @staticmethod
-    def _get_chromedriver(options=None, executable_path=None):
+    def _get_chromedriver(options=None, executable_path=None, **kwargs):
         from fake_useragent import UserAgent
         if not options:
             # https://intoli.com/blog/making-chrome-headless-undetectable/
@@ -82,31 +82,23 @@ class SeleniumScraper(Scraper):
             options.add_experimental_option('excludeSwitches', ['enable-automation'])
 
             #!! 沒開時自動開（？ 如何部署（？
-            options.add_argument('--proxy-server=http://' + "localhost:8080")
-            options.add_argument("--disable-notifications")
+            if kwargs.get("use_proxy"):
+                # run_proxy_server("inject_js/inject.py") # cross env
+                options.add_argument('--proxy-server=http://' + "localhost:8080")
 
             # 更換user agent
-            user_agent1 = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-            ua = UserAgent()
-            userAgent = ua.random
-            print(userAgent)
-            options.add_argument(f'user-agent={user_agent1}')
+            user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+            options.add_argument(f'user-agent={user_agent}')
 
+            options.add_argument("--disable-notifications")
             options.add_experimental_option('excludeSwitches', ['enable-automation'])
             options.add_experimental_option('useAutomationExtension', False)
             options.add_argument('--no-sandbox')
 
             options.add_argument("headless")
 
-        #??
-        os = check_os()
-        if os == "win":
-            chromedriver = webdriver.Chrome(executable_path=executable_path,
-                                            chrome_options=options)
-        elif os == "mac":
-            chromedriver = webdriver.Chrome(chrome_options=options)
-        else:
-            assert False, "The OS must be windows or mac"
+        chromedriver = webdriver.Chrome(executable_path=executable_path,
+                                        chrome_options=options)
         assert chromedriver, "Cannot get chromedriver"
 
         chromedriver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {

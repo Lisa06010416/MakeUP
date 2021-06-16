@@ -1,7 +1,0 @@
-torch==1.7.0+cu101
-efficientnet_pytorch==0.7.0
-selenium==3.141.0
-transformers==3.5.0
-wget==3.2
-dataclasses==0.7
-beautifulsoup4==4.9.3

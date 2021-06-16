@@ -1,9 +1,5 @@
 import os
 
-
-
-
-
 def create_dir(path):
     try:
         os.makedirs(path)

@@ -7,7 +7,7 @@ import zipfile
 import requests
 import wget
 
-from src.lisa.utils import logmanager
+from makeup.utils import logmanager
 
 logger = logmanager.get_logger(__name__)
 install_when_check = False
@@ -123,39 +123,43 @@ def check_os():
         os = "linux"
     else:
         assert False, "Didn't detect os"
-    logger.info("Detect os is {}".format(os))
+    logger.info("Your os is {}".format(os))
     return os
 
 
 def get_chrom_driver():
-    os_type = check_os()
-    chromdriver_download_list_url = "https://sites.google.com/a/chromium.org/chromedriver/downloads"
-    chromdriver_download_template = "https://chromedriver.storage.googleapis.com/{version}/chromedriver_{os}.zip"
-    webpage = requests.get(chromdriver_download_list_url)
-    chrom_version = getChromeVersion(os_type)
-    drive_version = ""
+    print("QQQQQQ")
+    chromedriver_path = "chromedriver.exe" if check_os() == "win" else "chromedriver"
+    if not os.path.isfile(chromedriver_path):
+        os_type = check_os()
+        chromdriver_download_list_url = "https://sites.google.com/a/chromium.org/chromedriver/downloads"
+        chromdriver_download_template = "https://chromedriver.storage.googleapis.com/{version}/chromedriver_{os}.zip"
+        webpage = requests.get(chromdriver_download_list_url)
+        chrom_version = getChromeVersion(os_type)
+        drive_version = ""
 
-    for line in str(webpage.content).split('"'):
-        if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
-            drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
-            if chrom_version == drive_version.split(".")[0]:
-                break
-
-    if os_type == "win":
-        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="win32")
-    elif os_type == "mac":
-        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="mac64")
-    else:
-        chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="linux64")
-
-    if chromdriver_download_url:
-        logger.info("Download chromdriver from {}".format(chromdriver_download_url))
-        wget.download(chromdriver_download_url, out="chromdriver.zip")
-        zip = zipfile.ZipFile('chromdriver.zip')
-        zip.extractall()
-        zip.close()
-        os.remove('chromdriver.zip')
-    else:
-        logger.warning("Can't download chromdriver, didn't detect chromdriver download url !")
-
-get_chrom_driver()
+        chromdriver_download_url = ""
+        for line in str(webpage.content).split('"'):
+            if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
+                drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
+                if chrom_version == drive_version.split(".")[0]:
+                    chromdriver_download_url = line
+                    break
+        print(drive_version)
+        print(chromdriver_download_url)
+        if os_type == "win":
+            chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="win32")
+        elif os_type == "mac":
+            chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="mac64")
+        else:
+            chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="linux64")
+        print(chromdriver_download_url)
+        if chromdriver_download_url:
+            logger.info("Download chromdriver from {}".format(chromdriver_download_url))
+            wget.download(chromdriver_download_url, out="./chromdriver.zip")
+            zip = zipfile.ZipFile('./chromdriver.zip')
+            zip.extractall()
+            zip.close()
+            os.remove('./chromdriver.zip')
+        else:
+            logger.warning("Can't download chromdriver, didn't detect download url !")

@@ -3,8 +3,8 @@ import torch
 from torchvision import datasets, transforms
 from transformers import Trainer, TrainingArguments
 
-from src.lisa.model.metrics import acc_metrics
-from src.lisa.model.efficientnet import EfficientNetModify, imageclassify_collect_fn
+from makeup.model.metrics import acc_metrics
+from makeup.model.efficientnet import EfficientNetModify, imageclassify_collect_fn
 
 
 class TestEfficientNetModify:

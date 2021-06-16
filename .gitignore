@@ -1,6 +1,7 @@
 *.log
 dataset/
-data/
+tests/testdata/image/
+
 .idea
 mlruns/
 result/

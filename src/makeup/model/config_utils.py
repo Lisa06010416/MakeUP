@@ -4,7 +4,7 @@ import json
 
 from typing import Any, Dict, Union
 
-from src.lisa.utils.logmanager import get_logger
+from makeup.utils.logmanager import get_logger
 CONFIG_NAME = "config.json"
 logger = get_logger(__name__)
 

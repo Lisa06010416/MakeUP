@@ -1,17 +1,16 @@
+import os
 import time
 import json
-import re
 import wget
-import os
-import requests
 
+import requests
 from urllib.parse import urljoin
 from selenium import webdriver
 from collections.abc import Sequence
 from bs4 import BeautifulSoup
 
-from src.lisa.data.utils import is_image_path, create_dir
-from src.lisa.utils.logmanager import get_logger
+from makeup.data.utils import is_image_path, create_dir
+from makeup.utils.logmanager import get_logger
 from abc import ABC, abstractmethod
 
 
@@ -74,7 +73,6 @@ class SeleniumScraper(Scraper):
 
     @staticmethod
     def _get_chromedriver(options=None, executable_path=None, **kwargs):
-        from fake_useragent import UserAgent
         if not options:
             # https://intoli.com/blog/making-chrome-headless-undetectable/
             options = webdriver.ChromeOptions()

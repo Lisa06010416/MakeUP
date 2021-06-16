@@ -6,7 +6,7 @@ from efficientnet_pytorch.utils import load_pretrained_weights
 from torch.nn import CrossEntropyLoss
 from transformers.file_utils import ModelOutput
 
-from src.lisa.model.config_utils import Config
+from makeup.model.config_utils import Config
 
 
 def imageclassify_collect_fn(batch):

@@ -11,3 +11,9 @@
 from src.lisa.data.scraper import DcardScraper
 scraper = DcardScraper.get_scraper(executable_path="C:/Users/Lisa/chromedriver_win32/chromedriver.exe")
 articles = scraper.scraper(keyword="試色", savepath="dataset/train/images", limit=300)
+
+
+
+
+
+

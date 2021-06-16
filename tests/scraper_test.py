@@ -2,21 +2,25 @@ import os
 import shutil
 from bs4 import BeautifulSoup
 
+from makeup.data.scraper import RequestScraper, SeleniumScraper, PttScraper, XiaohongshuScraper, DcardScraper
+from makeup.utils.envchecker import get_chrom_driver
+from makeup.cmdline.script import setup_mitmdump_server
 
-from src.lisa.data.scraper import RequestScraper, SeleniumScraper, PttScraper, XiaohongshuScraper, DcardScraper
-from src.lisa.utils.envchecker import get_chrom_driver, check_os
+# in mac need abs path
+chromedriver_path = os.path.abspath("chromedriver")
 
 test_web_url = "https://www.google.com.tw/"
 test_img_url = "https://drive.google.com/u/1/uc?id=1Y_6wLpMBscr1Kkw13xDr5kKgkrEyXvE2&export=download"
 test_xiaohongshu_url = "https://www.xiaohongshu.com/discovery/item/5ff15da0000000000101ef28?source=question"
 
+get_chrom_driver()
 
-chromedriver_path = "chromedriver.exe" if check_os() == "win" else "chromedriver"
-if not os.path.isfile(chromedriver_path):
-    get_chrom_driver()
+# open mitmdump_server # !! close!?
+setup_mitmdump_server()
+
 
 def get_soup_from_file(path):
-    with open(path, 'r') as f:
+    with open(path, 'r') as f:f
         file = f.read()
     return BeautifulSoup(file, 'html.parser')
 
@@ -95,7 +99,6 @@ class TestPttScraper:
         assert scraper
         assert isinstance(scraper, SeleniumScraper)
         soup = scraper.get_webdata(self.test_web_url)
-        print(soup)
         assert soup
 
     def test_get_ppt_article_list(self):
@@ -105,7 +108,6 @@ class TestPttScraper:
                                          base=RequestScraper)
 
         article_list = scraper.get_ppt_article_list(self.ptt_board_soup)
-        print(article_list)
         assert article_list
         assert len(article_list)==23
 

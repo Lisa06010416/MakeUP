@@ -27,8 +27,9 @@ setup(
     package_dir={"": "src"},
     python_requires=">=3.6, <= 3.7",
     install_requires=requires_list,
-    scripts=['script/mitmdump_server'],
+    scripts=['script/mitmdump_server', 'script/close_mitmdump_server'],
     entry_points={
-        'console_scripts': ['mitmdump_server=makeup.cmdline:setup_mitmdump_server'],
+        'console_scripts': ['mitmdump_server=makeup.cmdline:setup_mitmdump_server',
+                            'close_mitmdump_server=makeup.cmdline:close_mitmdump_server'],
     },
 )

@@ -127,8 +127,10 @@ def check_os():
     return os
 
 
-def get_chrom_driver():
-    print("QQQQQQ")
+def get_chrome_driver():
+    """
+    I find a useful tool webdriver-manager XDD
+    """
     chromedriver_path = "chromedriver.exe" if check_os() == "win" else "chromedriver"
     if not os.path.isfile(chromedriver_path):
         os_type = check_os()
@@ -138,22 +140,19 @@ def get_chrom_driver():
         chrom_version = getChromeVersion(os_type)
         drive_version = ""
 
-        chromdriver_download_url = ""
         for line in str(webpage.content).split('"'):
             if "https://chromedriver.storage.googleapis.com/index.html?path=" in line:
                 drive_version = re.findall(r'((?:\d+\.*)+)', line)[0]
                 if chrom_version == drive_version.split(".")[0]:
-                    chromdriver_download_url = line
                     break
-        print(drive_version)
-        print(chromdriver_download_url)
+
         if os_type == "win":
             chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="win32")
         elif os_type == "mac":
             chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="mac64")
         else:
             chromdriver_download_url = chromdriver_download_template.format(version=drive_version, os="linux64")
-        print(chromdriver_download_url)
+
         if chromdriver_download_url:
             logger.info("Download chromdriver from {}".format(chromdriver_download_url))
             wget.download(chromdriver_download_url, out="./chromdriver.zip")

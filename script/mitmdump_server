@@ -1,2 +1,2 @@
-echo open mitmdump server
 mitmdump -p 8080 -s inject.py
+echo open mitmdump server

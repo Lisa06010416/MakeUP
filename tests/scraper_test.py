@@ -3,8 +3,8 @@ import shutil
 from bs4 import BeautifulSoup
 
 from makeup.data.scraper import RequestScraper, SeleniumScraper, PttScraper, XiaohongshuScraper, DcardScraper
-from makeup.utils.envchecker import get_chrom_driver
-from makeup.cmdline.script import setup_mitmdump_server
+from makeup.utils.envchecker import get_chrome_driver
+from makeup.script import setup_mitmdump_server, close_mitmdump_server
 
 # in mac need abs path
 chromedriver_path = os.path.abspath("chromedriver")
@@ -13,14 +13,14 @@ test_web_url = "https://www.google.com.tw/"
 test_img_url = "https://drive.google.com/u/1/uc?id=1Y_6wLpMBscr1Kkw13xDr5kKgkrEyXvE2&export=download"
 test_xiaohongshu_url = "https://www.xiaohongshu.com/discovery/item/5ff15da0000000000101ef28?source=question"
 
-get_chrom_driver()
+get_chrome_driver()
 
-# open mitmdump_server # !! close!?
+# open mitmdump_server
 setup_mitmdump_server()
 
 
 def get_soup_from_file(path):
-    with open(path, 'r') as f:f
+    with open(path, 'r') as f:
         file = f.read()
     return BeautifulSoup(file, 'html.parser')
 
@@ -176,3 +176,6 @@ class TestDcardScraper:
     def teardown(self):
         if os.path.isdir("testdata/image/"):
             shutil.rmtree("testdata/image/")
+
+
+close_mitmdump_server()

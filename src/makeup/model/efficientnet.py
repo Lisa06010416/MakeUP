@@ -7,7 +7,7 @@ from torch.nn import CrossEntropyLoss
 from transformers.file_utils import ModelOutput
 
 from makeup.model.config_utils import Config
-
+from  makeup.model.model_utils import BaseModel
 
 def imageclassify_collect_fn(batch):
     data, labels = zip(*batch)
@@ -21,7 +21,7 @@ class EfficientNetOutput(ModelOutput):
     features: torch.FloatTensor = None
 
 
-class EfficientNetModify(EfficientNet):
+class EfficientNetModify(EfficientNet, BaseModel):
     def __init__(self, blocks_args=None, global_params=None):
         super().__init__(blocks_args, global_params)
         self.config = Config()
@@ -31,11 +31,23 @@ class EfficientNetModify(EfficientNet):
     @classmethod
     def from_pretrained(cls, model_name, weights_path=None, advprop=False,
                         in_channels=3, num_classes=1000, load_fc=False, **override_params):
+        """
+
+        :param model_name:
+        :param weights_path: list ["makeup_base_model"]
+        :param advprop:
+        :param in_channels:
+        :param num_classes:
+        :param load_fc:
+        :param override_params:
+        :return:
+        """
         # 原本的from_pretrained不會load fc layer
         model = cls.from_name(model_name, num_classes=num_classes, **override_params)
+        model._change_in_channels(in_channels)
+        weights_path = model._download_model_weight(weights_path)
         load_pretrained_weights(model, model_name, weights_path=weights_path, load_fc=load_fc,
                                 advprop=advprop)
-        model._change_in_channels(in_channels)
         # load config ! 測試
         if weights_path:
             dir_name, _ = os.path.split(weights_path)

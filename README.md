@@ -3,7 +3,7 @@
 
 TODO :
 
-- [ ] Download Model
+- [x] Download Model
 - [ ] Simple Inference Function
 - [ ] Incremental learning
 - [ ] Inference Server

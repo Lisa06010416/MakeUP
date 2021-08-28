@@ -7,7 +7,8 @@ from torch.nn import CrossEntropyLoss
 from transformers.file_utils import ModelOutput
 
 from makeup.model.config_utils import Config
-from  makeup.model.model_utils import BaseModel
+from makeup.model.model_utils import BaseModel
+from makeup.utils.file_utils import MODELWEIGHTPATH2FILEIDL
 
 def imageclassify_collect_fn(batch):
     data, labels = zip(*batch)
@@ -45,7 +46,8 @@ class EfficientNetModify(EfficientNet, BaseModel):
         # 原本的from_pretrained不會load fc layer
         model = cls.from_name(model_name, num_classes=num_classes, **override_params)
         model._change_in_channels(in_channels)
-        weights_path = model._download_model_weight(weights_path)
+        if weights_path in MODELWEIGHTPATH2FILEIDL:
+            weights_path = model._download_model_weight(weights_path)
         load_pretrained_weights(model, model_name, weights_path=weights_path, load_fc=load_fc,
                                 advprop=advprop)
         # load config ! 測試

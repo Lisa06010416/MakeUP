@@ -79,7 +79,7 @@ def has_pyngrok():
 
 @install_decorator("efficientnet_pytorch")
 def has_efficientnet():
-    return importlib.util.find_spec('efficientnet_pytorch') is not None
+    return importlib.util.find_spec('efficientnet_pytorch==0.7.0') is not None
 
 
 def set_mlflow_ui():

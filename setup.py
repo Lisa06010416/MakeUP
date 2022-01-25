@@ -23,9 +23,9 @@ setup(
     description="Contain functions which are using in Makeup Project",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
-    packages=find_packages(include=["src"]),
-    package_dir={"": "src"},
-    python_requires=">=3.6, <= 3.7",
+    packages=find_packages("src"),
+    package_dir={"makeup": "src/makeup"},
+    python_requires=">=3.6, <3.8",
     install_requires=requires_list,
     scripts=['script/mitmdump_server', 'script/close_mitmdump_server'],
     entry_points={

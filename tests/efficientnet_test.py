@@ -1,10 +1,36 @@
 import torch
+from PIL import Image
 
 from torchvision import datasets, transforms
 from transformers import Trainer, TrainingArguments
 
 from makeup.model.metrics import acc_metrics
 from makeup.model.efficientnet import EfficientNetModify, imageclassify_collect_fn
+
+
+class TestMakeUpModel:
+    model_name = 'efficientnet-b4'
+    image_size = 224
+    transfer = transforms.Compose([
+        transforms.Resize(image_size),
+        transforms.CenterCrop(image_size),
+        transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225]),
+    ])
+
+    def test_makeup_model(self):
+        model = EfficientNetModify.from_pretrained("makeup_base_model")
+        assert isinstance(model, EfficientNetModify), "cannot load model weight at EfficientNetModify"
+
+        img = Image.open('testdata/img/valid/craft/craft1.PNG').convert('RGB')
+        img = self.transfer(img)
+        img = img.view(1, 3, 224, 224)
+        output = model(img)
+        assert len(output.logits[0]) == 4
+
 
 
 class TestEfficientNetModify:

@@ -91,3 +91,9 @@ trainer = Trainer(
         * swatches
         * other
     ![Optional Text](./img/eval.png)
+    
+# 資料
+## torchvision
+###
+### transform
+* 對PIL image進行轉換

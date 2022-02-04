@@ -1,4 +1,4 @@
-include requirements.txt
 include README.md
-include inject.py
-include inject_content.js
+include src/makeup/script/inject.py
+include src/makeup/script/inject_content.js
+include src/makeup/script/close_mitmdump_server

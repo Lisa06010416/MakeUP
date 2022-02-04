@@ -1,5 +1,8 @@
 import torch
+import os
 from PIL import Image
+from makeup.model.convert_onnx import convert_efficient_net_model
+from makeup.search_relative_content import search_content_by_target_makeup_product, classify_img_in_article
 
 from torchvision import datasets, transforms
 from transformers import Trainer, TrainingArguments
@@ -31,6 +34,14 @@ class TestMakeUpModel:
         output = model(img)
         assert len(output.logits[0]) == 4
 
+    def test_inference(self):
+        model = EfficientNetModify.from_pretrained("makeup_base_model")
+        articles = search_content_by_target_makeup_product("粉餅")
+        for article in articles:
+            if article.images:
+                outputs = classify_img_in_article(article, model)
+                assert len(outputs) == len(article.images)
+                break
 
 
 class TestEfficientNetModify:
@@ -133,9 +144,13 @@ class TestEfficientNetModify:
 
         trainer.train()
 
-
         predict = trainer.predict(valid_dataset)
-        print(predict.predictions[1].shape)
+
         assert predict.predictions[0].shape == (4, 2)
         assert predict.predictions[1].shape == (4, 1280, 1, 1)
         assert isinstance(predict.metrics["eval_accuracy"], float)
+
+    def test_convert_onnx(self):
+        convert_efficient_net_model('efficientnet-b0', (3, 224, 224), "test.onnx")
+        assert os.path.isfile("test.onnx")
+        os.remove("test.onnx")

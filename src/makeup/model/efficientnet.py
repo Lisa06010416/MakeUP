@@ -82,13 +82,11 @@ class EfficientNetModify(EfficientNet, BaseModel):
         :return:
         """
         if model_name in MODELWEIGHTPATH2FILEIDL:
-            print("~~~~~~~~~", )
             num_classes = MODELWEIGHTPATH2FILEIDL[model_name].num_classes
             weights_path = cls._download_model_weight_from_googledrive(model_name)
             model_name = MODELWEIGHTPATH2FILEIDL[model_name].efficientnet_model_name
             load_fc = True
             include_top = False
-            print(model_name, weights_path, num_classes, load_fc, include_top)
 
         # 原本的from_pretrained不會load fc layer
         model = cls.from_name(model_name, num_classes=num_classes, **override_params)

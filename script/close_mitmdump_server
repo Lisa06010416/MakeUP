@@ -1,7 +1,0 @@
-pid=$(lsof -i -P -n | grep :8080 | cut -d ' ' -f2)
-if ["$pid" = ""]; then
-  echo no mitmdump server
-else
-  echo close mitmdump server
-  kill -9 $pid
-fi

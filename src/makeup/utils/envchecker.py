@@ -131,10 +131,11 @@ def get_chrome_driver():
     """
     I find a useful tool webdriver-manager XDD
     """
-    chromedriver_path = "chromedriver.exe" if check_os() == "win" else "chromedriver"
+    device_os = check_os()
+    chromedriver_path = "chromedriver.exe" if device_os == "win" else "chromedriver"
     if not os.path.isfile(chromedriver_path):
-        os_type = check_os()
-        chromdriver_download_list_url = "https://sites.google.com/a/chromium.org/chromedriver/downloads"
+        os_type = device_os
+        chromdriver_download_list_url = "https://sites.google.com/chromium.org/driver/downloads?authuser=0"
         chromdriver_download_template = "https://chromedriver.storage.googleapis.com/{version}/chromedriver_{os}.zip"
         webpage = requests.get(chromdriver_download_list_url)
         chrom_version = getChromeVersion(os_type)
